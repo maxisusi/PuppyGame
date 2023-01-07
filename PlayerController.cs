@@ -64,4 +64,6 @@ public class PlayerController : MonoBehaviour
         playerRigidbody.mass = 1 + (NewEnergy / 100);
         energyManager.reducer = NewEnergy;
     }
+
+
 }
