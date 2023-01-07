@@ -4,56 +4,36 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    Rigidbody2D playerRigidbody;
+    public float maxPushForce = 1000.0f;
+    public float minDragDistance = 0.1f;
+    public float maxDragDistance = 20f;
 
+    Vector2 startPosition;
 
-    private Rigidbody2D rb2d;
-
-    Vector2 mouseLatesPost = new Vector2(0f, 0f);
-    public float speed = 5;
-
-    private bool isMouseUp = false;
-
-
-    void Awake()
-    {
-        rb2d = GetComponent<Rigidbody2D>();
-    }
-    // Start is called before the first frame update
     void Start()
     {
+        playerRigidbody = GetComponent<Rigidbody2D>();
     }
 
-    void OnGUI()
-    {
-        Event e = Event.current;
-        if (e.type == EventType.MouseDrag)
-        {
-            mouseLatesPost += e.delta;
-            isMouseUp = false;
-        }
-
-        if (e.type == EventType.MouseUp && e.type != EventType.MouseDrag)
-        {
-            isMouseUp = true;
-            Debug.Log(mouseLatesPost);
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (isMouseUp)
-        {
-            Vector2 newPosition = new Vector2(Mathf.Clamp(-(mouseLatesPost.x), -2, 2), Mathf.Clamp(Mathf.Abs(mouseLatesPost.y), 0, 2));
-            rb2d.AddForce(newPosition, ForceMode2D.Impulse);
-            mouseLatesPost = new Vector2(0f, 0f);
-        }
-    }
-
-
-
-    // Update is called once per frame
     void Update()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            startPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            Vector2 endPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 dragDirection = endPosition - startPosition;
+            float dragDistance = dragDirection.magnitude;
+            dragDirection.Normalize();
 
+            float pushForce = Mathf.Lerp(0, maxPushForce, (dragDistance - minDragDistance) / (maxDragDistance - minDragDistance));
+
+            Debug.Log(pushForce);
+            // Apply the push force to the player
+            playerRigidbody.AddForce(new Vector2(-dragDirection.x, Mathf.Abs(dragDirection.y)) * pushForce, ForceMode2D.Force);
+        }
     }
 }
